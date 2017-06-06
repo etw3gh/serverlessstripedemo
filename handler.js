@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 // This is the original demo code
 module.exports.hello = (event, context, callback) => {

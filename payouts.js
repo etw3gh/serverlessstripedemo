@@ -1,4 +1,5 @@
-'use strict';
+'use strict'
+
 const stripe = require('stripe')(process.env.STRIPE_SECRET)
 
 module.exports.payoutsHandler = (event, context, callback) => {

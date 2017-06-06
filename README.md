@@ -16,6 +16,8 @@ You will need a user with the following permissions:
 
 Obtain AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and store in ~/.bashrc
 
+Add AWS_REGION as well.
+
 ## Serverless setup
 
 ### NVM
@@ -42,14 +44,13 @@ Serverless requires node.js 6.5.0 or later
 
 <!-- language: lang-none -->
     npm init
-    npm i --save stripe
-    sudo npm i
+    npm i --save stripe aws-sdk
 
 ## Modify serverless.yml
 
 ### ENV Variables
 
-AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY should be already stored in ~/.bashrc
+AWS_REGION, AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY should be already stored in ~/.bashrc
 
 They are needed by serverless and will be used later to test in Postman
 
@@ -62,6 +63,7 @@ Add the stripe variables to the serverless.yml:
     environment:
       STRIPE_PUB: ${env:STRIPE_PUB}
       STRIPE_SECRET: ${env:STRIPE_SECRET}
+      REGION: ${env:AWS_REGION}
 
 ### Includes and Excludes
 
