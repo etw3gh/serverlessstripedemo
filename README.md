@@ -94,15 +94,15 @@ Add the stripe variables to the serverless.yml:
 
 ## Set API Gateway Trigger
 
-    From the AWS Lambda console:
+From the AWS Lambda console:
 
-    > Navigate to the function > Triggers
+    Navigate to the function > Triggers
 
-    > Add Triggers
+    Add Triggers
 
-    > Choose API Gateway
+    Choose API Gateway
 
-    > Note the URL for the function (copy it)
+    Note the URL for the function (copy it)
 
 ## Test in Postman
 
