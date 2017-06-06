@@ -30,13 +30,13 @@ Serverless requires node.js 6.5.0 or later
 
 ### Install serverless globally
 
-    npm install -g serverless
+    sudo npm install -g serverless
 
 ### Create Project
 
     serverless create --template aws-nodejs --path path-to-my-service
 
-    cd my-service
+    cd path-to-my-service
 
 ## Dependency setup
 
