@@ -92,7 +92,37 @@ Add the stripe variables to the serverless.yml:
 
 ## Deploy To Lambda
 
+Essentially commits a version to lambda which can be rolled back
+
+Use for initial commit as well as future updates
+
     serverless deploy -v
+
+## List Deployments
+
+    serverless deploy list
+
+<!-- language: lang-none -->
+
+    Serverless: Listing deployments:
+    Serverless: -------------
+    Serverless: Timestamp: 1496728264151
+    Serverless: Datetime: 2017-06-06T05:51:04.151Z
+    Serverless: Files:
+    Serverless: - compiled-cloudformation-template.json
+    Serverless: - sc0.zip
+    Serverless: -------------
+    Serverless: Timestamp: 1496779274764
+    Serverless: Datetime: 2017-06-06T20:01:14.764Z
+    Serverless: Files:
+    Serverless: - compiled-cloudformation-template.json
+    Serverless: - sc0.zip
+
+## Rollback
+
+Replace TS with a timestamp from the above list
+
+    serverless rollback --timestamp TS
 
 ## Set API Gateway Trigger
 
