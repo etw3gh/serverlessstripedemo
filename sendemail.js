@@ -1,73 +1,82 @@
 'use strict'
 const AWS = require('aws-sdk')
 
+
+const err = (error, msg, statusCode, body) => {
+    const response = {
+      statusCode: statusCode,
+      body: {
+        message: msg,
+        error: error,
+        body: body
+      }
+    }
+    return response
+}
+
+
+
 module.exports.sendemailHandler = (event, context, callback) => {
+  let ses = null
+  let emailParams = {}
+
+  const bodyData = event.body.bodyData
+  const bodyCharset = 'UTF-8'
+  const subjectData = event.body.subjectData
+  const subjectCharset = bodyCharset
+  const sourceEmail = process.env.SES_SENDER
 
   try {
-    let ses = new AWS.SES({region: process.env.REGION})
+    ses = new AWS.SES({region: process.env.REGION})
+  }
+  catch (e) {
+    const response = err(e, 'SES INIT ERROR', 500, event.body)
+    callback(null, response)
+  }
 
-    const bodyData = event.body.bodyData
-    const bodyCharset = 'UTF-8'
-    const subjectdata = event.body.subjectdata
-    const subjectCharset = bodyCharset
-    const sourceEmail = process.env.SES_SENDER
-
-    let emailParams = {
-      Destination: {
-        BccAddresses: [process.env.SES_SENDER],
-        CcAddresses: [],
-        ToAddresses: [process.env.SES_SENDER]
-      },
-      Message: {
-        Body: {
-          Text: {
-            Data: bodyData,
-            Charset: bodyCharset
-          }
-        },
-        Subject: {
-          Data: subjectdata,
-          Charset: subjectCharset
+  emailParams = {
+    Destination: {
+      BccAddresses: [],
+      CcAddresses: [],
+      ToAddresses: [process.env.SES_SENDER]
+    },
+    Message: {
+      Body: {
+        Text: {
+          Data: bodyData,
+          Charset: bodyCharset
         }
       },
-      Source: sourceEmail,
-      ReplyToAddresses: process.env.SES_SENDER
-    }
+      Subject: {
+        Data: subjectData,
+        Charset: subjectCharset
+      }
+    },
+    Source: sourceEmail,
+    ReplyToAddresses: [process.env.SES_SENDER]
+  }
 
+  try {
     // obtain a promise
-    const sesPromise = ses.sendEmail(emailParams)
-
+    const sesPromise = ses.sendEmail(emailParams).promise()
 
     // handle promise
-    sesPromise.then( sesResponse => {
+    sesPromise.then( (sesResponse) => {
         const response = {
           statusCode: 200,
-          body: JSON.stringify({
+          body: {
             message: 'SUCCESS',
-            sesResponse: sesResponse
-          })
+            sesesponse: sesResponse
+          }
         }
         callback(null, response)
-    }).catch( e => {
-        const response = {
-          statusCode: 500,
-          body: JSON.stringify({
-            message: 'SES SENDING ERROR',
-            input: event,
-            error: e
-          })
-        }
+    }).catch( (e) => {
+        const response = err(e, 'SES SENDING ERROR', 500, event.body)
         callback(null, response)
     })
-  } catch(e) {
-      const response = {
-        statusCode: 502,
-        body: JSON.stringify({
-          message: 'SES SETUP ERROR',
-          input: event,
-          error: e
-        })
-      }
-      callback(null, response)
+  }
+  catch (e) {
+    const response = err(e, 'SES PROMISE ERROR', 500, event.body)
+    callback(null, response)
   }
 }

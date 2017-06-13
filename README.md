@@ -14,9 +14,30 @@ You will need a user with the following permissions:
 
 > AmazonAPIGatewayAdministrator
 
+> AmazonSESFullAccess
+
 Obtain AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and store in ~/.bashrc
 
 Add AWS_REGION as well.
+
+## SES Policy
+
+Add policy to allow SES SendEmail to the role associated with the IAM user
+
+<!-- language: lang-none -->
+
+
+    {
+    "Version": "2012-10-17",
+        "Statement": [
+          {
+          	"Effect": "Allow",
+          	"Action": [ "ses:SendEmail" ],
+          	"Resource": "arn:aws:ses:{AWS_REGION}:{AWS_ACCOUNT}:identity/*"
+    	    }
+         ]
+    }
+
 
 ## Serverless setup
 
@@ -34,9 +55,13 @@ Serverless requires node.js 6.5.0 or later
 
     sudo npm install -g serverless
 
+### Serverless BASH alias
+
+Use `sls` or `serverless` interchangeably
+
 ### Create Project
 
-    serverless create --template aws-nodejs --path path-to-my-service
+    sls create --template aws-nodejs --path path-to-my-service
 
     cd path-to-my-service
 
@@ -72,23 +97,43 @@ Add the stripe variables to the serverless.yml:
       include:
         - node_modules/**
       exclude:
+        - /*/\.txt
+        - /*/\.md
         - package.json
-
-### Declare functions
+        - temp
+### Declare functions with api gateway triggers
 
 <!-- language: lang-none -->
 
     functions:
       payouts:
         handler: payouts.payoutsHandler
+        events:
+          - http:
+              path: payouts
+              method: get
+
       balance:
         handler: balance.balanceHandler
+        events:
+          - http:
+              path: balance
+              method: get
+
+      sendemail:
+        handler: sendemail.sendemailHandler
+        memorySize: 1024
+        events:
+          - http:
+              path: sendemail
+              method: post
+              integration: lambda
 
 ## Invoke Locally
 
-    serverless invoke local -f balance
+    sls invoke local -f FUNCTION-NAME
 
-    serverless invoke local -f payouts
+TODO: invoke post method instructions..... --data {...}
 
 ## Deploy To Lambda
 
@@ -96,11 +141,17 @@ Essentially commits a version to lambda which can be rolled back
 
 Use for initial commit as well as future updates
 
-    serverless deploy -v
+    sls deploy -v
+
+## Update single functions
+
+Replace FN with function name
+
+    sls deploy -f FN
 
 ## List Deployments
 
-    serverless deploy list
+    sls deploy list
 
 <!-- language: lang-none -->
 
@@ -122,21 +173,35 @@ Use for initial commit as well as future updates
 
 Replace TS with a timestamp from the above list
 
-    serverless rollback --timestamp TS
-
-## Set API Gateway Trigger
-
-From the AWS Lambda console:
-
-    Navigate to the function > Triggers
-
-    Add Triggers
-
-    Choose API Gateway
-
-    Note the URL for the function (copy it)
+    sls rollback --timestamp TS
 
 ## Test in Postman
+
+### get urls
+
+    sls info
+
+Note the endpoints section. Cut and paste into Postman or application code
+
+<!-- language: lang-none -->
+
+    Service Information
+    service: sc0
+    stage: dev
+    region: us-east-1
+    api keys:
+      None
+    endpoints:
+      GET - https://{API_GATEWAY_ID}.execute-api.{AWS_REGION}.amazonaws.com/dev/payouts
+      GET - https://{API_GATEWAY_ID}.execute-api.{AWS_REGION}.amazonaws.com/dev/balance
+      POST - https://{API_GATEWAY_ID}.execute-api.{AWS_REGION}.amazonaws.com/dev/sendemail
+    functions:
+      payouts: sc0-dev-payouts
+      balance: sc0-dev-balance
+      sendemail: sc0-dev-sendemail
+
+
+
 
 Create an environment in Postman:
 
@@ -144,7 +209,9 @@ Create an environment in Postman:
 
 Add AWS_ACCESS_KEY and AWS_SECRET_ACCESS_KEY with corresponding values
 
-Paste the function URL and select GET. Select the above created environment.
+Select the above created environment.
+
+Paste API URL
 
 Under Authorization set:
 
@@ -154,7 +221,25 @@ Under Authorization set:
 
 Leave AWS Region and Service Name blank
 
-Hit Send
+For balance and payouts select GET and hit send
+
+For sendemail select POST
+
+In Headers Add:
+
+    Content-Type: application/json
+
+For the body choose raw
+
+add the required body items:
+
+    {
+      "bodyData": "This is the email body..........",
+      "bodySubject": "Subject. Hello."
+    }
+
+
+### JSON Responses
 
 Output for balance:
 <!-- language: lang-none -->
@@ -201,5 +286,21 @@ Output for payouts:
             "data": [],
             "has_more": false,
             "url": "/v1/payouts"
+        }
+    }
+
+Output for sendemail:
+<!-- language: lang-none -->
+
+    {
+        "statusCode": 200,
+        "body": {
+            "message": "SUCCESS",
+            "sesesponse": {
+                "ResponseMetadata": {
+                    "RequestId": "b2dee3d9-4feb-11e7-99a4-9d56844faeb7"
+                },
+                "MessageId": "0100015c9f94ab2e-ee1e2d5a-50eb-485c-8bc7-de0d7e455f27-000000"
+            }
         }
     }

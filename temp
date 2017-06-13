@@ -1,0 +1,5 @@
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - ses:SendRawEmail
+        Resource: arn:aws:ses:${env:AWS_REGION}:*:*

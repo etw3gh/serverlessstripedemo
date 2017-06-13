@@ -5,17 +5,12 @@ provider:
   runtime: nodejs6.10
   stage: dev
   region: ${env:AWS_REGION}
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - ses:SendRawEmail
-      Resource: arn:aws:ses:${env:AWS_REGION}:*:*
 
   environment:
     STRIPE_PUB: ${env:STRIPE_PUB}
     STRIPE_SECRET: ${env:STRIPE_SECRET}
     REGION: ${env:AWS_REGION}
-    EMAIL: ${env:SES_SENDER}
+    SES_SENDER: ${env:SES_SENDER}
 
 package:
   include:
@@ -24,6 +19,7 @@ package:
     - /*/\.txt
     - /*/\.md
     - package.json
+    - temp
 
 functions:
   payouts:
@@ -32,14 +28,12 @@ functions:
       - http:
           path: payouts
           method: get
-
   balance:
     handler: balance.balanceHandler
     events:
       - http:
           path: balance
           method: get
-
   sendemail:
     handler: sendemail.sendemailHandler
     memorySize: 1024
