@@ -20,6 +20,20 @@ Obtain AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and store in ~/.bashrc
 
 Add AWS_REGION as well.
 
+### AWS config for multiple IAM roles
+
+Serverless will use the default AWS keys mentioned above unless a profile is specified
+
+#### Create profile
+
+Replace USERPROFILE with an aws profile name of your choice
+
+    aws configure --profile USERPROFILE
+
+During deploy use --aws-profile in addition to any other params required
+
+    sls deploy --aws-profile USERPROFILE
+
 ## SES Policy
 
 Add policy to allow SES SendEmail to the role associated with the IAM user

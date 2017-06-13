@@ -2,14 +2,15 @@
 const AWS = require('aws-sdk')
 
 
-const err = (error, msg, statusCode, body) => {
+const err = (error, msg, statusCode, body, params={}) => {
     const response = {
       statusCode: statusCode,
       body: {
         message: msg,
         error: error,
         body: body
-      }
+      },
+      params: params
     }
     return response
 }
@@ -71,7 +72,7 @@ module.exports.sendemailHandler = (event, context, callback) => {
         }
         callback(null, response)
     }).catch( (e) => {
-        const response = err(e, 'SES SENDING ERROR', 500, event.body)
+        const response = err(e, 'SES SENDING ERROR', 500, event.body, emailParams)
         callback(null, response)
     })
   }
